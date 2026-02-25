@@ -1,0 +1,15 @@
+{
+  "name": "codebase-indexer",
+  "version": "1.0.0",
+  "description": "Semantic code indexing service for codebases and conversations",
+  "main": "src/sync/main_enhanced.py",
+  "scripts": {
+    "start": "python -m src.sync.main_enhanced"
+  },
+  "dependencies": {},
+  "keywords": ["indexing", "semantic-search", "codebase", "marqo"],
+  "author": "",
+  "license": "MIT"
+}
+
+

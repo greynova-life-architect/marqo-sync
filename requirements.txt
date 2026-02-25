@@ -1,0 +1,11 @@
+watchdog==2.3.1
+marqo>=2.0.0,<3.0.0
+python-dotenv==1.0.0
+tiktoken>=0.5.0
+langdetect>=1.0.9
+pygments>=2.15.0
+aiohttp>=3.8.0
+pyyaml>=6.0
+fastapi>=0.104.0
+uvicorn>=0.24.0
+pydantic>=2.0.0

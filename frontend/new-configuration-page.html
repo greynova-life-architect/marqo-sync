@@ -1,0 +1,1170 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marqo Sync | Indexer Configuration</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            /* Clinical Color Palette */
+            --clinical-bg-primary: #0f172a;
+            --clinical-bg-secondary: #1e293b;
+            --clinical-bg-tertiary: #334155;
+            --clinical-border: #475569;
+            --clinical-text-primary: #f8fafc;
+            --clinical-text-secondary: #cbd5e1;
+            --clinical-text-muted: #94a3b8;
+            --clinical-accent: #0ea5e9;
+            
+            /* Status Indicators */
+            --status-active: #22c55e;
+            --status-inactive: #64748b;
+            --status-error: #ef4444;
+            --status-warning: #f59e0b;
+            --status-syncing: #0ea5e9;
+            
+            /* Fonts */
+            --font-mono: 'JetBrains Mono', 'SF Mono', Monaco, monospace;
+            --font-ui: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        body {
+            background-color: var(--clinical-bg-primary);
+            color: var(--clinical-text-primary);
+            font-family: var(--font-ui);
+            font-size: 0.875rem;
+            line-height: 1.5;
+        }
+
+        /* Clinical Header */
+        .clinical-header {
+            background: linear-gradient(135deg, var(--clinical-bg-secondary) 0%, var(--clinical-bg-tertiary) 100%);
+            border-bottom: 2px solid var(--clinical-border);
+            padding: 1rem 0;
+            margin-bottom: 1.5rem;
+        }
+
+        .clinical-header h1 {
+            font-weight: 600;
+            font-size: 1.5rem;
+            color: var(--clinical-text-primary);
+            margin: 0;
+        }
+
+        .clinical-header .subtitle {
+            color: var(--clinical-text-secondary);
+            font-size: 0.8rem;
+            margin-top: 0.25rem;
+        }
+
+        /* Connection Status Banner */
+        .connection-status {
+            background: linear-gradient(90deg, var(--clinical-bg-secondary), var(--clinical-bg-tertiary));
+            border: 1px solid var(--clinical-border);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .connection-status::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--status-active);
+            animation: pulse 2s ease-in-out infinite alternate;
+        }
+
+        /* Status Badges */
+        .status-badge {
+            font-size: 0.7rem;
+            font-weight: 500;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-family: var(--font-mono);
+        }
+
+        .status-badge.active {
+            background-color: rgba(34, 197, 94, 0.15);
+            color: var(--status-active);
+            border: 1px solid var(--status-active);
+        }
+
+        .status-badge.inactive {
+            background-color: rgba(100, 116, 139, 0.15);
+            color: var(--status-inactive);
+            border: 1px solid var(--status-inactive);
+        }
+
+        .status-badge.error {
+            background-color: rgba(239, 68, 68, 0.15);
+            color: var(--status-error);
+            border: 1px solid var(--status-error);
+        }
+
+        .status-badge.syncing {
+            background-color: rgba(14, 165, 233, 0.15);
+            color: var(--status-syncing);
+            border: 1px solid var(--status-syncing);
+        }
+
+        /* Statistics */
+        .stat-item {
+            background: rgba(15, 23, 42, 0.5);
+            border: 1px solid var(--clinical-border);
+            border-radius: 6px;
+            padding: 0.75rem;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-family: var(--font-mono);
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--clinical-accent);
+            display: block;
+        }
+
+        .stat-label {
+            font-size: 0.7rem;
+            color: var(--clinical-text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Folder Items */
+        .folder-item {
+            background: var(--clinical-bg-tertiary);
+            border: 1px solid var(--clinical-border);
+            border-radius: 6px;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .folder-item.active {
+            border-left: 3px solid var(--status-active);
+        }
+
+        .folder-item.error {
+            border-left: 3px solid var(--status-error);
+        }
+
+        .folder-item.syncing {
+            border-left: 3px solid var(--status-syncing);
+        }
+
+        .folder-path {
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            color: var(--clinical-text-secondary);
+            background: rgba(15, 23, 42, 0.8);
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            border: 1px solid var(--clinical-border);
+        }
+
+        /* Form Controls */
+        .form-control, .form-select {
+            background-color: var(--clinical-bg-tertiary);
+            border-color: var(--clinical-border);
+            color: var(--clinical-text-primary);
+            font-size: 0.8rem;
+        }
+
+        .form-control:focus, .form-select:focus {
+            background-color: var(--clinical-bg-tertiary);
+            border-color: var(--clinical-accent);
+            box-shadow: 0 0 0 0.2rem rgba(14, 165, 233, 0.25);
+            color: var(--clinical-text-primary);
+        }
+
+        /* Toggle Switches */
+        .form-check-input {
+            background-color: var(--clinical-bg-tertiary);
+            border-color: var(--clinical-border);
+        }
+
+        .form-check-input:checked {
+            background-color: var(--clinical-accent);
+            border-color: var(--clinical-accent);
+        }
+
+        /* Buttons */
+        .btn {
+            font-size: 0.8rem;
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+        }
+
+        .btn-primary {
+            background-color: var(--clinical-accent);
+            border-color: var(--clinical-accent);
+        }
+
+        .btn-primary:hover {
+            background-color: #0284c7;
+            border-color: #0284c7;
+        }
+
+        .btn-outline-secondary {
+            border-color: var(--clinical-border);
+            color: var(--clinical-text-secondary);
+        }
+
+        .btn-outline-secondary:hover {
+            background-color: var(--clinical-bg-tertiary);
+            border-color: var(--clinical-accent);
+            color: var(--clinical-text-primary);
+        }
+
+        .btn-sm {
+            font-size: 0.7rem;
+            padding: 0.25rem 0.5rem;
+        }
+
+        /* Progress bars */
+        .progress {
+            height: 4px;
+            background-color: var(--clinical-bg-secondary);
+        }
+
+        .progress-bar {
+            background-color: var(--clinical-accent);
+        }
+
+        /* Animations */
+        @keyframes pulse {
+            0% { opacity: 0.8; }
+            100% { opacity: 1; }
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .spinner {
+            animation: spin 1s linear infinite;
+        }
+
+        /* Accordion Customization */
+        .accordion-item {
+            background-color: var(--clinical-bg-secondary);
+            border: 1px solid var(--clinical-border);
+            border-radius: 8px;
+        }
+
+        .accordion-button {
+            background-color: var(--clinical-bg-secondary);
+            color: var(--clinical-text-primary);
+            border: none;
+            padding: 1.25rem;
+            font-weight: 500;
+        }
+
+        .accordion-button:not(.collapsed) {
+            background-color: var(--clinical-bg-tertiary);
+            color: var(--clinical-text-primary);
+            box-shadow: none;
+        }
+
+        .accordion-button:focus {
+            z-index: 3;
+            border-color: var(--clinical-accent);
+            outline: 0;
+            box-shadow: 0 0 0 0.25rem rgba(14, 165, 233, 0.25);
+        }
+
+        .accordion-button::after {
+            background-image: none;
+            content: "⌄";
+            color: var(--clinical-text-secondary);
+            font-size: 1.2rem;
+            transition: transform 0.2s ease-in-out;
+        }
+
+        .accordion-button:not(.collapsed)::after {
+            transform: rotate(-180deg);
+        }
+
+        .accordion-body {
+            background-color: var(--clinical-bg-primary);
+            border-top: 1px solid var(--clinical-border);
+        }
+
+        /* Prevent toggle switches from triggering accordion */
+        .form-check-input {
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header Section -->
+    <div class="clinical-header">
+        <div class="container-fluid">
+            <div class="row align-items-center">
+                <div class="col">
+                    <div class="d-flex align-items-center">
+                        <a href="#" class="text-decoration-none me-3 text-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Dashboard
+                        </a>
+                        <div>
+                            <h1 class="mb-1">Indexer Configuration</h1>
+                            <div class="subtitle">Manage Marqo connection and indexer project synchronization</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-auto">
+                    <div class="btn-group btn-group-sm" role="group">
+                        <button type="button" class="btn btn-success" disabled>
+                            <i class="fas fa-check me-1"></i>
+                            Saved
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary">
+                            <i class="fas fa-bolt me-1"></i>
+                            Test Connections
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary">
+                            <i class="fas fa-undo me-1"></i>
+                            Reset
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Connection Status Banner -->
+    <div class="container-fluid">
+        <div class="connection-status">
+            <div class="row align-items-center">
+                <div class="col">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-check-circle text-success me-2"></i>
+                        <div>
+                            <strong>Marqo Connected</strong>
+                            <span class="text-muted ms-2 font-monospace">localhost:8882</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-auto">
+                    <small class="text-muted">Last: 2m ago • 42ms</small>
+                </div>
+                <div class="col-auto">
+                    <button class="btn btn-sm btn-outline-secondary">
+                        <i class="fas fa-sync-alt me-1"></i>
+                        Test
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Accordion -->
+        <div class="accordion" id="indexerAccordion">
+            <!-- Codebase Section -->
+            <div class="accordion-item mb-3">
+                <h2 class="accordion-header">
+                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#codebaseSection" aria-expanded="true" aria-controls="codebaseSection">
+                        <div class="d-flex justify-content-between align-items-center w-100">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-code me-3 text-primary" style="font-size: 1.25rem;"></i>
+                                <div>
+                                    <h6 class="mb-1">Codebase</h6>
+                                    <small class="text-muted">Source code semantic search</small>
+                                </div>
+                            </div>
+                            <div class="d-flex align-items-center gap-3 me-4">
+                                <div class="d-flex align-items-center gap-2">
+                                    <div class="stat-item-compact">
+                                        <span class="stat-number">2</span>
+                                        <span class="stat-label">Projects</span>
+                                    </div>
+                                    <div class="stat-item-compact">
+                                        <span class="stat-number">7</span>
+                                        <span class="stat-label">Folders</span>
+                                    </div>
+                                    <div class="stat-item-compact">
+                                        <span class="stat-number">2.8k</span>
+                                        <span class="stat-label">Files</span>
+                                    </div>
+                                </div>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" checked onclick="event.stopPropagation();">
+                                    <label class="form-check-label text-muted small">Enable</label>
+                                </div>
+                            </div>
+                        </div>
+                    </button>
+                </h2>
+                <div id="codebaseSection" class="accordion-collapse collapse show" data-bs-parent="#indexerAccordion">
+                    <div class="accordion-body p-3">
+                        <!-- Status & Controls -->
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div class="d-flex align-items-center">
+                                <span class="status-badge active me-3">
+                                    <i class="fas fa-check-circle me-1"></i>
+                                    Active
+                                </span>
+                                <small class="text-muted">
+                                    <i class="fas fa-database me-1"></i>
+                                    Index: <code>codebase</code> • Synced 2m ago
+                                </small>
+                            </div>
+                            <div class="btn-group btn-group-sm">
+                                <button class="btn btn-primary btn-sm">
+                                    <i class="fas fa-sync-alt me-1"></i>
+                                    Sync All
+                                </button>
+                                <button class="btn btn-outline-secondary btn-sm" data-bs-toggle="collapse" data-bs-target="#addCodebaseProject">
+                                    <i class="fas fa-plus me-1"></i>
+                                    Add Project
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Active Projects -->
+                        <div class="mb-3">
+                            <h6 class="mb-2 text-muted small text-uppercase">Active Projects</h6>
+                            
+                            <!-- Sample Codex Project -->
+                            <div class="project-card mb-2">
+                                <div class="d-flex justify-content-between align-items-center p-2">
+                                    <div class="d-flex align-items-center">
+                                        <div class="form-check form-switch me-2">
+                                            <input class="form-check-input form-check-input-sm" type="checkbox" checked>
+                                        </div>
+                                        <div>
+                                            <strong class="project-name">Sample Codex Project</strong>
+                                            <span class="badge bg-success badge-sm ms-2">4 folders</span>
+                                            <span class="status-badge syncing ms-2">
+                                                <i class="fas fa-sync-alt fa-spin me-1"></i>
+                                                Syncing
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="btn-group btn-group-sm">
+                                        <button class="btn btn-outline-secondary btn-sm" data-bs-toggle="collapse" data-bs-target="#project-folders">
+                                            <i class="fas fa-chevron-down"></i>
+                                        </button>
+                                        <button class="btn btn-outline-primary btn-sm">
+                                            <i class="fas fa-sync-alt"></i>
+                                        </button>
+                                        <button class="btn btn-outline-danger btn-sm">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <!-- Project Folders -->
+                                <div class="collapse show" id="project-folders">
+                                    <div class="folder-list">
+                                        <div class="folder-item-compact syncing">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <div class="d-flex align-items-center flex-grow-1">
+                                                    <div class="form-check form-switch me-2">
+                                                        <input class="form-check-input form-check-input-sm" type="checkbox" checked>
+                                                    </div>
+                                                    <div class="folder-info">
+                                                        <strong class="folder-name">Core</strong>
+                                                        <div class="folder-path">/project/core</div>
+                                                    </div>
+                                                </div>
+                                                <div class="folder-status">
+                                                    <div class="d-flex align-items-center gap-2">
+                                                        <span class="text-info small">
+                                                            <i class="fas fa-sync-alt fa-spin"></i>
+                                                            847 files
+                                                        </span>
+                                                        <div class="progress-mini">
+                                                            <div class="progress-bar bg-info" style="width: 67%"></div>
+                                                        </div>
+                                                        <small class="text-muted">67%</small>
+                                                    </div>
+                                                </div>
+                                                <div class="folder-actions">
+                                                    <div class="btn-group btn-group-sm">
+                                                        <button type="button" class="btn btn-outline-secondary btn-xs" title="Test Path">
+                                                            <i class="fas fa-check"></i>
+                                                        </button>
+                                                        <button type="button" class="btn btn-outline-warning btn-xs" title="Cancel">
+                                                            <i class="fas fa-pause"></i>
+                                                        </button>
+                                                        <button type="button" class="btn btn-outline-danger btn-xs" title="Remove">
+                                                            <i class="fas fa-trash"></i>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="folder-item-compact active">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <div class="d-flex align-items-center flex-grow-1">
+                                                    <div class="form-check form-switch me-2">
+                                                        <input class="form-check-input form-check-input-sm" type="checkbox" checked>
+                                                    </div>
+                                                    <div class="folder-info">
+                                                        <strong class="folder-name">API</strong>
+                                                        <div class="folder-path">/project/api</div>
+                                                    </div>
+                                                </div>
+                                                <div class="folder-status">
+                                                    <div class="text-center">
+                                                        <span class="text-success small">
+                                                            <i class="fas fa-check-circle"></i>
+                                                            312 files
+                                                        </span>
+                                                        <small class="text-muted d-block">2m ago</small>
+                                                    </div>
+                                                </div>
+                                                <div class="folder-actions">
+                                                    <div class="btn-group btn-group-sm">
+                                                        <button type="button" class="btn btn-outline-secondary btn-xs">
+                                                            <i class="fas fa-check"></i>
+                                                        </button>
+                                                        <button type="button" class="btn btn-outline-primary btn-xs">
+                                                            <i class="fas fa-sync-alt"></i>
+                                                        </button>
+                                                        <button type="button" class="btn btn-outline-danger btn-xs">
+                                                            <i class="fas fa-trash"></i>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="folder-item-compact active">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <div class="d-flex align-items-center flex-grow-1">
+                                                    <div class="form-check form-switch me-2">
+                                                        <input class="form-check-input form-check-input-sm" type="checkbox" checked>
+                                                    </div>
+                                                    <div class="folder-info">
+                                                        <strong class="folder-name">Frontend</strong>
+                                                        <div class="folder-path">/project/frontend</div>
+                                                    </div>
+                                                </div>
+                                                <div class="folder-status">
+                                                    <div class="text-center">
+                                                        <span class="text-success small">
+                                                            <i class="fas fa-check-circle"></i>
+                                                            1.1k files
+                                                        </span>
+                                                        <small class="text-muted d-block">2m ago</small>
+                                                    </div>
+                                                </div>
+                                                <div class="folder-actions">
+                                                    <div class="btn-group btn-group-sm">
+                                                        <button type="button" class="btn btn-outline-secondary btn-xs">
+                                                            <i class="fas fa-check"></i>
+                                                        </button>
+                                                        <button type="button" class="btn btn-outline-primary btn-xs">
+                                                            <i class="fas fa-sync-alt"></i>
+                                                        </button>
+                                                        <button type="button" class="btn btn-outline-danger btn-xs">
+                                                            <i class="fas fa-trash"></i>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="folder-item-compact error">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <div class="d-flex align-items-center flex-grow-1">
+                                                    <div class="form-check form-switch me-2">
+                                                        <input class="form-check-input form-check-input-sm" type="checkbox" checked>
+                                                    </div>
+                                                    <div class="folder-info">
+                                                        <strong class="folder-name">Infrastructure</strong>
+                                                        <div class="folder-path">/project/infrastructure</div>
+                                                    </div>
+                                                </div>
+                                                <div class="folder-status">
+                                                    <div class="text-center">
+                                                        <span class="text-danger small">
+                                                            <i class="fas fa-exclamation-triangle"></i>
+                                                            Path error
+                                                        </span>
+                                                        <small class="text-muted d-block">1h ago</small>
+                                                    </div>
+                                                </div>
+                                                <div class="folder-actions">
+                                                    <div class="btn-group btn-group-sm">
+                                                        <button type="button" class="btn btn-outline-warning btn-xs">
+                                                            <i class="fas fa-exclamation-triangle"></i>
+                                                        </button>
+                                                        <button type="button" class="btn btn-outline-secondary btn-xs" disabled>
+                                                            <i class="fas fa-sync-alt"></i>
+                                                        </button>
+                                                        <button type="button" class="btn btn-outline-danger btn-xs">
+                                                            <i class="fas fa-trash"></i>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Sample Project -->
+                            <div class="project-card mb-2">
+                                <div class="d-flex justify-content-between align-items-center p-2">
+                                    <div class="d-flex align-items-center">
+                                        <div class="form-check form-switch me-2">
+                                            <input class="form-check-input form-check-input-sm" type="checkbox" checked>
+                                        </div>
+                                        <div>
+                                            <strong class="project-name">Sample Project</strong>
+                                            <span class="badge bg-success badge-sm ms-2">3 folders</span>
+                                            <span class="status-badge active ms-2">Idle</span>
+                                        </div>
+                                    </div>
+                                    <div class="btn-group btn-group-sm">
+                                        <button class="btn btn-outline-secondary btn-sm" data-bs-toggle="collapse" data-bs-target="#sample-project-folders">
+                                            <i class="fas fa-chevron-down"></i>
+                                        </button>
+                                        <button class="btn btn-outline-primary btn-sm">
+                                            <i class="fas fa-sync-alt"></i>
+                                        </button>
+                                        <button class="btn btn-outline-danger btn-sm">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <div class="collapse" id="sample-project-folders">
+                                    <div class="folder-list">
+                                        <div class="folder-item-compact active">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <div class="d-flex align-items-center flex-grow-1">
+                                                    <div class="form-check form-switch me-2">
+                                                        <input class="form-check-input form-check-input-sm" type="checkbox" checked>
+                                                    </div>
+                                                    <div class="folder-info">
+                                                        <strong class="folder-name">Backend</strong>
+                                                        <div class="folder-path">/projects/sample-app/backend</div>
+                                                    </div>
+                                                </div>
+                                                <div class="folder-status">
+                                                    <div class="text-center">
+                                                        <span class="text-success small">
+                                                            <i class="fas fa-check-circle"></i>
+                                                            621 files
+                                                        </span>
+                                                        <small class="text-muted d-block">5m ago</small>
+                                                    </div>
+                                                </div>
+                                                <div class="folder-actions">
+                                                    <div class="btn-group btn-group-sm">
+                                                        <button type="button" class="btn btn-outline-secondary btn-xs">
+                                                            <i class="fas fa-check"></i>
+                                                        </button>
+                                                        <button type="button" class="btn btn-outline-primary btn-xs">
+                                                            <i class="fas fa-sync-alt"></i>
+                                                        </button>
+                                                        <button type="button" class="btn btn-outline-danger btn-xs">
+                                                            <i class="fas fa-trash"></i>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="folder-item-compact active">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <div class="d-flex align-items-center flex-grow-1">
+                                                    <div class="form-check form-switch me-2">
+                                                        <input class="form-check-input form-check-input-sm" type="checkbox" checked>
+                                                    </div>
+                                                    <div class="folder-info">
+                                                        <strong class="folder-name">Templates</strong>
+                                                        <div class="folder-path">/projects/sample-app/templates</div>
+                                                    </div>
+                                                </div>
+                                                <div class="folder-status">
+                                                    <div class="text-center">
+                                                        <span class="text-success small">
+                                                            <i class="fas fa-check-circle"></i>
+                                                            245 files
+                                                        </span>
+                                                        <small class="text-muted d-block">5m ago</small>
+                                                    </div>
+                                                </div>
+                                                <div class="folder-actions">
+                                                    <div class="btn-group btn-group-sm">
+                                                        <button type="button" class="btn btn-outline-secondary btn-xs">
+                                                            <i class="fas fa-check"></i>
+                                                        </button>
+                                                        <button type="button" class="btn btn-outline-primary btn-xs">
+                                                            <i class="fas fa-sync-alt"></i>
+                                                        </button>
+                                                        <button type="button" class="btn btn-outline-danger btn-xs">
+                                                            <i class="fas fa-trash"></i>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="folder-item-compact active">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <div class="d-flex align-items-center flex-grow-1">
+                                                    <div class="form-check form-switch me-2">
+                                                        <input class="form-check-input form-check-input-sm" type="checkbox" checked>
+                                                    </div>
+                                                    <div class="folder-info">
+                                                        <strong class="folder-name">Assets</strong>
+                                                        <div class="folder-path">/projects/sample-app/assets</div>
+                                                    </div>
+                                                </div>
+                                                <div class="folder-status">
+                                                    <div class="text-center">
+                                                        <span class="text-success small">
+                                                            <i class="fas fa-check-circle"></i>
+                                                            92 files
+                                                        </span>
+                                                        <small class="text-muted d-block">5m ago</small>
+                                                    </div>
+                                                </div>
+                                                <div class="folder-actions">
+                                                    <div class="btn-group btn-group-sm">
+                                                        <button type="button" class="btn btn-outline-secondary btn-xs">
+                                                            <i class="fas fa-check"></i>
+                                                        </button>
+                                                        <button type="button" class="btn btn-outline-primary btn-xs">
+                                                            <i class="fas fa-sync-alt"></i>
+                                                        </button>
+                                                        <button type="button" class="btn btn-outline-danger btn-xs">
+                                                            <i class="fas fa-trash"></i>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Add New Project Form -->
+                        <div class="collapse" id="addCodebaseProject">
+                            <div class="card border-primary border-2" style="border-style: dashed !important;">
+                                <div class="card-body p-3">
+                                    <h6 class="mb-3">
+                                        <i class="fas fa-plus-circle me-2"></i>
+                                        Add Codebase Project
+                                    </h6>
+                                    <div class="row g-2">
+                                        <div class="col-md-6">
+                                            <label class="form-label small">Project Name</label>
+                                            <input type="text" class="form-control form-control-sm" placeholder="Enter project name">
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label small">Base Path</label>
+                                            <div class="input-group input-group-sm">
+                                                <input type="text" class="form-control" placeholder="/path/to/project">
+                                                <button class="btn btn-outline-secondary" type="button">
+                                                    <i class="fas fa-folder"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div class="col-12">
+                                            <label class="form-label small">Folders to Include</label>
+                                            <div class="row g-1">
+                                                <div class="col-3">
+                                                    <input type="text" class="form-control form-control-sm" placeholder="src">
+                                                </div>
+                                                <div class="col-3">
+                                                    <input type="text" class="form-control form-control-sm" placeholder="api">
+                                                </div>
+                                                <div class="col-3">
+                                                    <input type="text" class="form-control form-control-sm" placeholder="frontend">
+                                                </div>
+                                                <div class="col-3">
+                                                    <input type="text" class="form-control form-control-sm" placeholder="docs">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex gap-2 mt-3">
+                                        <button type="button" class="btn btn-primary btn-sm">
+                                            <i class="fas fa-plus me-1"></i>
+                                            Add Project
+                                        </button>
+                                        <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-toggle="collapse" data-bs-target="#addCodebaseProject">
+                                            Cancel
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Codex Section -->
+            <div class="accordion-item mb-3">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#codexSection" aria-expanded="false" aria-controls="codexSection">
+                        <div class="d-flex justify-content-between align-items-center w-100">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-sitemap me-3 text-info" style="font-size: 1.25rem;"></i>
+                                <div>
+                                    <h6 class="mb-1">Codex</h6>
+                                    <small class="text-muted">Directory structure indexing</small>
+                                </div>
+                            </div>
+                            <div class="d-flex align-items-center gap-3 me-4">
+                                <div class="d-flex align-items-center gap-2">
+                                    <div class="stat-item-compact">
+                                        <span class="stat-number">1</span>
+                                        <span class="stat-label">Projects</span>
+                                    </div>
+                                    <div class="stat-item-compact">
+                                        <span class="stat-number">2</span>
+                                        <span class="stat-label">Directories</span>
+                                    </div>
+                                    <div class="stat-item-compact">
+                                        <span class="stat-number">847</span>
+                                        <span class="stat-label">Folders</span>
+                                    </div>
+                                </div>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" checked onclick="event.stopPropagation();">
+                                    <label class="form-check-label text-muted small">Enable</label>
+                                </div>
+                            </div>
+                        </div>
+                    </button>
+                </h2>
+                <div id="codexSection" class="accordion-collapse collapse" data-bs-parent="#indexerAccordion">
+                    <div class="accordion-body p-3">
+                        <!-- Status & Controls -->
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div class="d-flex align-items-center">
+                                <span class="status-badge active me-3">
+                                    <i class="fas fa-check-circle me-1"></i>
+                                    Active
+                                </span>
+                                <small class="text-muted">
+                                    <i class="fas fa-database me-1"></i>
+                                    Index: <code>codex</code> • Synced 1h ago
+                                </small>
+                            </div>
+                            <div class="btn-group btn-group-sm">
+                                <button class="btn btn-primary btn-sm">
+                                    <i class="fas fa-sync-alt me-1"></i>
+                                    Sync All
+                                </button>
+                                <button class="btn btn-outline-secondary btn-sm">
+                                    <i class="fas fa-plus me-1"></i>
+                                    Add Directory
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Documentation Archive -->
+                        <div class="project-card">
+                            <div class="d-flex justify-content-between align-items-center p-2">
+                                <div class="d-flex align-items-center">
+                                    <div class="form-check form-switch me-2">
+                                        <input class="form-check-input form-check-input-sm" type="checkbox" checked>
+                                    </div>
+                                    <div>
+                                        <strong class="project-name">Documentation Archive</strong>
+                                        <span class="badge bg-success badge-sm ms-2">2 directories</span>
+                                        <span class="status-badge active ms-2">Idle</span>
+                                    </div>
+                                </div>
+                                <div class="btn-group btn-group-sm">
+                                    <button class="btn btn-outline-secondary btn-sm" data-bs-toggle="collapse" data-bs-target="#docs-folders">
+                                        <i class="fas fa-chevron-down"></i>
+                                    </button>
+                                    <button class="btn btn-outline-primary btn-sm">
+                                        <i class="fas fa-sync-alt"></i>
+                                    </button>
+                                    <button class="btn btn-outline-danger btn-sm">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="collapse show" id="docs-folders">
+                                <div class="folder-list">
+                                    <div class="folder-item-compact active">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div class="d-flex align-items-center flex-grow-1">
+                                                <div class="form-check form-switch me-2">
+                                                    <input class="form-check-input form-check-input-sm" type="checkbox" checked>
+                                                </div>
+                                                <div class="folder-info">
+                                                    <strong class="folder-name">Technical Docs</strong>
+                                                    <div class="folder-path">/documents/technical</div>
+                                                </div>
+                                            </div>
+                                            <div class="folder-status">
+                                                <div class="text-center">
+                                                    <span class="text-success small">
+                                                        <i class="fas fa-check-circle"></i>
+                                                        126 dirs
+                                                    </span>
+                                                    <small class="text-muted d-block">1h ago</small>
+                                                </div>
+                                            </div>
+                                            <div class="folder-actions">
+                                                <div class="btn-group btn-group-sm">
+                                                    <button type="button" class="btn btn-outline-secondary btn-xs">
+                                                        <i class="fas fa-check"></i>
+                                                    </button>
+                                                    <button type="button" class="btn btn-outline-primary btn-xs">
+                                                        <i class="fas fa-sync-alt"></i>
+                                                    </button>
+                                                    <button type="button" class="btn btn-outline-danger btn-xs">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="folder-item-compact active">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div class="d-flex align-items-center flex-grow-1">
+                                                <div class="form-check form-switch me-2">
+                                                    <input class="form-check-input form-check-input-sm" type="checkbox" checked>
+                                                </div>
+                                                <div class="folder-info">
+                                                    <strong class="folder-name">Archives</strong>
+                                                    <div class="folder-path">/documents/archives</div>
+                                                </div>
+                                            </div>
+                                            <div class="folder-status">
+                                                <div class="text-center">
+                                                    <span class="text-success small">
+                                                        <i class="fas fa-check-circle"></i>
+                                                        721 dirs
+                                                    </span>
+                                                    <small class="text-muted d-block">1h ago</small>
+                                                </div>
+                                            </div>
+                                            <div class="folder-actions">
+                                                <div class="btn-group btn-group-sm">
+                                                    <button type="button" class="btn btn-outline-secondary btn-xs">
+                                                        <i class="fas fa-check"></i>
+                                                    </button>
+                                                    <button type="button" class="btn btn-outline-primary btn-xs">
+                                                        <i class="fas fa-sync-alt"></i>
+                                                    </button>
+                                                    <button type="button" class="btn btn-outline-danger btn-xs">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Conversations Section -->
+            <div class="accordion-item mb-3">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#conversationsSection" aria-expanded="false" aria-controls="conversationsSection">
+                        <div class="d-flex justify-content-between align-items-center w-100">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-comments me-3 text-warning" style="font-size: 1.25rem;"></i>
+                                <div>
+                                    <h6 class="mb-1">Conversations</h6>
+                                    <small class="text-muted">AI conversation history</small>
+                                </div>
+                            </div>
+                            <div class="d-flex align-items-center gap-3 me-4">
+                                <div class="d-flex align-items-center gap-2">
+                                    <div class="stat-item-compact">
+                                        <span class="stat-number">0</span>
+                                        <span class="stat-label">Sources</span>
+                                    </div>
+                                    <div class="stat-item-compact">
+                                        <span class="stat-number">0</span>
+                                        <span class="stat-label">Conversations</span>
+                                    </div>
+                                    <div class="stat-item-compact">
+                                        <span class="stat-number">—</span>
+                                        <span class="stat-label">Last Sync</span>
+                                    </div>
+                                </div>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" onclick="event.stopPropagation();">
+                                    <label class="form-check-label text-muted small">Enable</label>
+                                </div>
+                            </div>
+                        </div>
+                    </button>
+                </h2>
+                <div id="conversationsSection" class="accordion-collapse collapse" data-bs-parent="#indexerAccordion">
+                    <div class="accordion-body p-3">
+                        <!-- Status & Controls -->
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div class="d-flex align-items-center">
+                                <span class="status-badge error me-3">
+                                    <i class="fas fa-exclamation-triangle me-1"></i>
+                                    No Sources
+                                </span>
+                                <small class="text-muted">
+                                    <i class="fas fa-database me-1"></i>
+                                    Index: <code>conversations</code> • Not created
+                                </small>
+                            </div>
+                            <button class="btn btn-primary btn-sm">
+                                <i class="fas fa-plus me-1"></i>
+                                Add Source
+                            </button>
+                        </div>
+
+                        <!-- Empty State -->
+                        <div class="empty-state">
+                            <div class="text-center py-4">
+                                <i class="fas fa-comments empty-state-icon"></i>
+                                <h6 class="mt-3 text-muted">No conversation sources configured</h6>
+                                <p class="text-muted mb-3 small">Add conversation export folders to enable semantic search.</p>
+                                
+                                <div class="row g-2 justify-content-center">
+                                    <div class="col-6 col-md-3">
+                                        <button class="btn btn-outline-primary btn-sm w-100">
+                                            <i class="fas fa-robot me-1"></i>
+                                            ChatGPT
+                                        </button>
+                                    </div>
+                                    <div class="col-6 col-md-3">
+                                        <button class="btn btn-outline-primary btn-sm w-100">
+                                            <i class="fas fa-brain me-1"></i>
+                                            Claude
+                                        </button>
+                                    </div>
+                                    <div class="col-6 col-md-3">
+                                        <button class="btn btn-outline-primary btn-sm w-100">
+                                            <i class="fab fa-github me-1"></i>
+                                            Copilot
+                                        </button>
+                                    </div>
+                                    <div class="col-6 col-md-3">
+                                        <button class="btn btn-outline-primary btn-sm w-100">
+                                            <i class="fas fa-plus me-1"></i>
+                                            Custom
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- System Overview -->
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center py-2">
+                <h6 class="mb-0">
+                    <i class="fas fa-chart-line me-2"></i>
+                    System Overview
+                </h6>
+                <small class="text-muted">
+                    <i class="fas fa-sync-alt fa-spin text-info me-1"></i>
+                    Active sync in progress
+                </small>
+            </div>
+            <div class="card-body p-3">
+                <div class="row">
+                    <div class="col-md-8">
+                        <h6 class="mb-2 small text-uppercase text-muted">Active Operations</h6>
+                        
+                        <div class="sync-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-sync-alt fa-spin text-info me-2"></i>
+                                    <span>Sample Project Core</span>
+                                </div>
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="progress-mini-lg">
+                                        <div class="progress-bar bg-info" style="width: 67%"></div>
+                                    </div>
+                                    <small class="text-muted">67% • 0:45</small>
+                                    <button class="btn btn-outline-secondary btn-xs">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <h6 class="mb-2 small text-uppercase text-muted">Statistics</h6>
+                        <div class="stats-grid">
+                            <div class="stat-item-compact">
+                                <span class="stat-number">2,847</span>
+                                <span class="stat-label">Documents</span>
+                            </div>
+                            <div class="stat-item-compact">
+                                <span class="stat-number">9</span>
+                                <span class="stat-label">Folders</span>
+                            </div>
+                            <div class="stat-item-compact">
+                                <span class="stat-number">6</span>
+                                <span class="stat-label">Active</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Interactive functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            // Progress bar animation for active sync
+            setInterval(() => {
+                const progressBar = document.querySelector('.progress-bar');
+                if (progressBar) {
+                    let width = parseInt(progressBar.style.width) || 67;
+                    width = (width + 1) % 100;
+                    progressBar.style.width = width + '%';
+                }
+            }, 2000);
+
+            // Toggle functionality
+            const switches = document.querySelectorAll('.form-check-input[type="checkbox"]');
+            switches.forEach(sw => {
+                sw.addEventListener('change', function() {
+                    const card = this.closest('.card');
+                    if (card) {
+                        card.style.opacity = this.checked ? '1' : '0.6';
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
